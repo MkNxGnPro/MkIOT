@@ -1,4 +1,4 @@
 ### Documentation Pending
 
 ## Install via pip
-<b>pip install mkiot<b>
+<b>pip install MkIOT<b>
