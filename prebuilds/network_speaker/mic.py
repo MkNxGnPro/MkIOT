@@ -82,7 +82,7 @@ def on_question(question=messaging.message): # If the device we're connecting to
         question.answer(json.dumps(AUDIO_CONFIG))
 
 
-def on_data(message=messaging.message): # If the device we're connecting to ask's us a question it will come up here.
+def on_data(message=messaging.message): # If the device we're connecting to sends us data it will come up here.
     global SpeakerReady
     print("Device Sent:", message.data)
 
