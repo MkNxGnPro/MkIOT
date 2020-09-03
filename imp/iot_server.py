@@ -94,6 +94,7 @@ class IOT_Server(object):
         if connector.meta['mac'] is not None:
             self.devices[connector.meta['mac']] = iot_device
         else:
+            connector.meta['mac'] = connector.receive_confirm
             self.devices[connector.conID] = iot_device
 
         if self.on_new_connection is not None:

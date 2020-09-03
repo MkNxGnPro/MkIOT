@@ -2,7 +2,9 @@
 Hello, How are you? Good I hope, it's nice of you to come back.
 ~Mark
 
-MkIOT - IMP Server and Client
+
+MkIOT - Setting up an IMP Server
+    -- Not built to be ran (Document only)
 
 These tutorials are to help you grasp MkIOT.
 
@@ -10,36 +12,50 @@ There are endless things you can create with programming, let MkIOT help you bui
 
 """
 
-import time, colorama # For later use
-
-# Let's start off with getting our IP Address
-
-from MkIOT import Get_Device_IPS
-
-DEVICE_IP = Get_Device_IPS()['ext'][0]
-print(DEVICE_IP)
-
-# Now let's import the IMP Server
+# Import the IMP Server
 # IMP stands for Instant Message Protocol by MkNxGn
 
 from MkIOT.imp import iot_server
 
-# We will set up the IMP Server
-
+# Create an IOT Server Instance
 server = iot_server.IOT_Server()
-server.HOST = DEVICE_IP
-server.PORT = 5000
-#server.password = "some_password"       # optionally add a password to the connection - MD5 nonce encryption is used
+
+# You then need to set the basic properties that are required to turn the server on
+server.HOST = "127.0.0.1"       # We'll use our loopback address
+server.PORT = 5000              # We'll use the port 5000
+
+# Those are the only two REQUIRED functions on a server. However, even though the server will run there is no linking to the server's receive stream and our program
 
 # We need functions for when we receive different types of data. The type you use will depend on what you're getting done.
-# The four types MkIOT has split are: data (for general data), question (data that requires responses), audio, video and ping (this is only for checking if a connection is alive or connection latency)
+# The four types of channels MkIOT has are: data (for general data), question (data that requires responses), audio, and video
 
 
-# We'll set up data, and questions, not all data types need to be used or have a function defined.
-# We will build functions that accept a message param
+# We'll create a basic message function
+def message_function(param1):
+    pass
+
+# Using the data channel
+# The servers attribute for the channel = our function
+server.on_data = message_function
+
+# Using the audio channel
+server.on_audio_frame = message_function
+
+# Using the video channel
+server.on_video_frame = message_function
+
+# Though there are different channels, these channels merly serve as a organizational structure for you.
+# I.E, you could send video data on the audio channel, or send audio data on the general data channel
+# NOTE - Not all channels need to be pointed to the same functions, they can be pointed to different functions specific for the channel
 
 
-# When receiving data on either the client or server side, you'll get a message object
+# The next type and probably most useful is the question channel, a question is a data that get's sent through the network and waits for a response, or an answer to the question
+# The data you send could be anything, a word, json dumped dictionary, numbers or anything
+# It is the reciving end that must determine what the questioner is asking for and respond to the question.
+
+server.on_question = message_function
+
+# When the connection receives data it is then transformed into a message object : MkIOT.imp.messaging.message
 # Message objects hold a lot of information on the data being sent across such as:
 # messaging.message.connector      # Who sent you the message
 # messaging.message.data           # Data that came with the message
@@ -47,130 +63,64 @@ server.PORT = 5000
 # messaging.message.timing         # The timing of the message - when it was sent (message.timing.sent), when it was received (message.timing.received) and how long it took to send and get a received reply (message.timing.round_trip)
 # and much more
 
-def Data_function(message=iot_server.messaging.message):          # message=iot_server.messaging.message is put here for auto complete
-    print("We received a data message:", message.data, "from:", message.connector)
+# The message object is then given to your function as the only parameter
 
-def Question_function(message=iot_server.messaging.message):      # message=iot_server.messaging.message is put here for auto complete
-    print(f"{colorama.Fore.CYAN}[ SERVER ] - We received a question from:", message.connector)
-    print(f"{colorama.Fore.CYAN}[ SERVER ] - They ask:", colorama.Fore.GREEN, message.data, colorama.Fore.RESET)                        # the data from a question
+# For linter (auto complete) purposes, creating a channel function like this could be very benificial
+from MkIOT.imp import messaging
 
-    reply = input(f"{colorama.Fore.CYAN}[ SERVER ] - Response (type here): {colorama.Fore.RESET}")
+def on_message(message=messaging.message):
+    pass
 
-    message.answer(reply)                                   # How to respond to a question
-                                                            # - Note: not responding to a question will throw an exception (timeout error) for the questioner
 
-def New_Connection(device=iot_server.__IOT_Device__):
-    # We receive a IOT_Device on a new connection,
-    # This object instance is very much similar to MkIOT.imp.iot_device.IOT_Device() when it comes to functionallity with minor changes in background functions
+# There are other functions you can use on your server to get notified about different things
+# on_new_connection
+# on_disconnect
 
-    # We'll send them a hello
-    print(f"{colorama.Fore.CYAN}[ SERVER ] - New Connection:", device.ip)
-    print(f"{colorama.Fore.CYAN}[ SERVER ] - Let's say hello", colorama.Fore.RESET)
-    device.send_data("hello!")
+# on_new_connection and on_disconnect both give a iot_device object : MkIOT.imp.iot_server.__IOT_Device__ to your function as the only parameter
 
+# Example usage
+def new_client(client=iot_server.__IOT_Device__):
+    print("We have a new client:", client)
+    client.send_data("hello!")
+
+server.on_new_connection = new_client
+
+
+def lost_client(client=iot_server.__IOT_Device__):
+    print("We lost client:", client)
+
+server.on_disconnect = lost_client
+
+
+# These functions can be turned off during program execution by setting them to None
+# These functions can be assigned to different functions by setting them to the new functions name
+
+
+
+
+#                                                           About Questions
+
+# NOTE: How to answer a question
+
+def on_question(message=messaging.message):
+    print("Question Data:", message.data)       #The data that came with the question message
+
+    # TODO: Do something here; like: check a status, ask a question to something else, get data from the internet. Anything really
+    # NOTE: Make sure you do not exceed timeout duration. If timeout duration is exceeded, the program that asked the question will get an exception (timeout error)
+    reply = "Beep Beep Boop Boop"
+
+    # TODO: Answer the question
+
+    message.answer(reply)
+
+# NOTE: How to ask a question
+
+# Example usage
+def new_client(client=iot_server.__IOT_Device__):
+    print("We have a new client:", client)
+    #                    question Data   Timeout
+    message = client.ask("who are you?", 10)
     
-# We now need to link our custom functions to the server
+    # when the client responds, you can get the response by
+    print(message.response)
 
-server.on_question       = Question_function   # when we receive a question
-server.on_data           = Data_function       # when we receive data
-server.on_new_connection = New_Connection      # when a new connection is established
-                                               #  - Note: You can change functions to other functions while the server is running or turn them off by turning them to None
- 
-
-# That's it! Easy. Now let's start the server!
-
-server.run_server()
-
-
-# You can optionally run a loop after turning the server on:
-# server.run_loop()
-
-
-
-# ------------------------------------------------------------------------------------------------------ |
-# CLIENT
-
-
-# Let's build a client to connect to the server
-
-from MkIOT.imp import iot_device
-
-
-server_connection = iot_device.IOT_Device()
-server_connection.HOST = DEVICE_IP                  # Connection details to connect to the host server
-server_connection.PORT = 5000
-#server_connection.password = "some_password"       # optionally add a password to the connection - MD5 nonce encryption is used
-
-
-# Like the server, we need to link functions to the connection since data can go both ways
-
-
-def Client_Data_function(message=iot_server.messaging.message):          # message=iot_server.messaging.message is put here for auto complete
-    print(f"{colorama.Fore.GREEN}[ CLIENT ] - We received a data message from:", message.connector, "\n[ CLIENT ] - Message Data:",colorama.Fore.CYAN, message.data, colorama.Fore.RESET)
-
-
-server_connection.on_data = Client_Data_function
-
-
-# That's it, we can now connect!
-server_connection.connect()
-
-time.sleep(2)
-
-# Let's ask the server a question
-question = input("\nWhat should we ask the server? (type here): ")
-
-
-
-print("")
-while server_connection.connected:    # While we're connected, we'll try to ask the server the question until it completes correctly
-    try:
-        message = server_connection.ask(question, timeout=30) # Send the server the question with a 30 second timeout
-        break
-    except:
-        print("The server didn't respond fast enough or the connection was closed")
-        # Try again
-
-print("\nThe Server Responded:".ljust(30), f"{colorama.Fore.CYAN}{message.response}{colorama.Fore.RESET}")   # To get the response for a question asked, use message.response
-
-print("\nThe Question Timing:", "\nSent Time:".ljust(30), message.timing.sent, "\nReceived and Responded:".ljust(30), message.timing.received, "\nRound Trip:".ljust(30), round(message.timing.round_trip, 1), "Seconds")
-
-"""
-Example Output:
-
-    >>> 192.168.0.3
-    >>> [ SERVER ] - New Connection: 192.168.0.3
-    >>> [ SERVER ] - Let's say hello 
-    >>> [ CLIENT ] - We received a data message from: <MkIOT IMP Server Connection: 192.168.0.3>
-    >>> [ CLIENT ] - Message Data:  hello! 
-    >>> 
-    >>> What should we ask the server? (type here): what's your name?
-    >>> 
-    >>> [ SERVER ] - We received a question from: <MkIOT IMP Client Connection: 192.168.0.3>
-    >>> [ SERVER ] - They ask:  what's your name? 
-    >>> [ SERVER ] - Response (type here): Dell PowerEdge r710
-    >>> 
-    >>> The Server Responded:         Dell PowerEdge r710
-    >>> 
-    >>> The Question Timing:
-    >>> Sent Time:                    1599118043.403757
-    >>> Received and Responded:       1599118054.586911
-    >>> Round Trip:                   11.2 Seconds   (It took me to long to type....)
-
-
-Test MkIOT speed:
-
-    Replace line 121 with:
-    question = "what's up?"
-
-    and Line 57 with:
-    reply = "nothing much"
-
-
-    My New Question Timing:
-
-        >>> The Question Timing:
-        >>> Sent Time:                    1599119295.124059
-        >>> Received and Responded:       1599119295.13171
-        >>> Round Trip:                   0.0 Seconds
-"""
