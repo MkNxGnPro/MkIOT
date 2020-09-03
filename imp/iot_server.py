@@ -6,12 +6,13 @@ from . import messaging
 
 class IOT_Server(object):
     
-    def __init__(self, HOST=None, PORT=None, on_verified_new_connection_def=None, password=None, on_data=None, on_question=None, on_video_frame=None, on_audio_frame=None, on_disconnect=None, receive_confirm=True, receive_confirm_timeout=5, challenge_type=verification.types.NONCE, challenge_timeout=5, discovery_server=None):
+    def __init__(self, HOST=None, PORT=None, on_new_connection=None, password=None, on_data=None, on_question=None, on_video_frame=None, on_audio_frame=None, on_disconnect=None, receive_confirm=True, receive_confirm_timeout=5, challenge_type=verification.types.NONCE, challenge_timeout=5, discovery_server=None):
         self.HOST = HOST
         self.PORT = PORT
         self.password = password
         self.challengeType = challenge_type
-        self.on_verified_new_connection_def = on_verified_new_connection_def
+        self.on_verified_new_connection_def = on_new_connection # Removing
+        self.on_new_connection = on_new_connection              # use this instead
         self.challenge_timeout = challenge_timeout
         self.discovery_server = discovery_server
 
@@ -34,7 +35,7 @@ class IOT_Server(object):
         if self.HOST is None or self.PORT is None:
             raise ValueError("HOST and PORT must be set to run a Server")
 
-        self.server = socket_ops.Socket_Server_Host(self.HOST, self.PORT, self.on_connection, on_data_recv=None, on_question=None, on_connection_close=self.__lost_connection__, PYTHONIC_only=True)
+        self.server = socket_ops.Socket_Server_Host(self.HOST, self.PORT, self.__on_connection__, on_data_recv=None, on_question=None, on_connection_close=self.__lost_connection__, PYTHONIC_only=True)
 
         if self.discovery_server is not None:
             if self.discovery_server.PORT == self.PORT and self.discovery_server.HOST == self.HOST:
@@ -44,7 +45,7 @@ class IOT_Server(object):
             self.discovery_server.run()
 
 
-    def on_connection(self, connector=socket_ops.Socket_Server_Client):
+    def __on_connection__(self, connector=socket_ops.Socket_Server_Client):
         connector.meta['validated'] = False
         identify_message = {"IDENTIFY": ["ip_data"]}
         if self.password != None:
@@ -95,8 +96,8 @@ class IOT_Server(object):
         else:
             self.devices[connector.conID] = iot_device
 
-        if self.on_verified_new_connection_def is not None:
-            threading.Thread(target=self.on_verified_new_connection_def, args=[iot_device], daemon=True).start()
+        if self.on_new_connection is not None:
+            threading.Thread(target=self.on_new_connection, args=[iot_device], daemon=True).start()
             
         connector.send("__connect_lock__ disable")    
         
@@ -134,6 +135,8 @@ class __IOT_Device__(object):
         self.connector.on_data = self.__data__
         self.data_usage = self.connector.data_usage
 
+        self.ip, self.port = connector.addr
+
         self.mac = mac
         self.on_data = on_data
         self.on_question = on_question
@@ -144,6 +147,9 @@ class __IOT_Device__(object):
         self.receive_confirm_timeout = receive_confirm_timeout
 
         self.meta = meta
+
+    def __str__(self):
+        return f"<MkIOT IMP Client Connection: {self.ip}>"
 
 
     def disconnect(self):

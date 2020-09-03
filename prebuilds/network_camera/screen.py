@@ -13,7 +13,7 @@ DEVICE_NAME =      "MK_IOT_SCREEN"               # Change this to anything you w
 DEVICE_PASSWORD =  "mkiot"                       # Password for this camera
 DEVICE_IP =        Get_Device_IPS()['ext'][0]    # Get This Devices IP
 DEVICE_PORT =      7002                          # The Port for audio data to be sent back and forth
-DISCOVER_PORT =    7001                          # The Port where Mic's will send connect requests to cameras to discover new cameras
+DISCOVER_PORT =    7001                          # The Port where Screens's will send connect requests to cameras to discover new cameras
 HOTPHRASE =        "mkiot_network_device"        # What the camera will respond to when a connect request is sent out
 
 CURRENT_FRAME =    None                          # For later use

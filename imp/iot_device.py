@@ -40,6 +40,9 @@ class IOT_Device(object):
 
         self.meta = meta
 
+    def __str__(self):
+        return f"<MkIOT IMP Server Connection: {self.HOST}>"
+
     def push_meta(self):
         msg = messaging.message(self.server, self.meta, self.receive_confirm, self.receive_confirm_timeout, messaging.types.META_PUSH, send_as_daemon=False)
         return msg

@@ -30,7 +30,7 @@ class Time_Keeper(object):
     
     def confirmed(self, rcv_ts):
         self.received = rcv_ts
-        self.round_trip = (TimeStamp() - self.sent) * 1000
+        self.round_trip = (TimeStamp() - self.sent)
 
 def translate_question(question, connector):
     msg_type = get_msg_type(question.data)

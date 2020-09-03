@@ -63,23 +63,23 @@ class Discovery_Server(object):
         
 class Discovery_Broadcast(object):
 
-    def __init__(self, port, hotphrase="discovery"):
-        self.GW = Get_GW()
-        self.IP = Get_IP()
+    def __init__(self, port, hotphrase="discovery", broadcast_ip=None):
         self.hotphrase = hotphrase
         self.timeout = 5
         self.check_port = port
-        self.base = ".".join(self.GW.split(".")[:3]) + "."
         self.Devices = Devices()
+        self.broadcast_ip = broadcast_ip
 
     def Collect(self, timeout=5, hotphrase=None):
         if hotphrase is not None:
             self.hotphrase = hotphrase
+        if self.broadcast_ip is None:
+            self.broadcast_ip = Get_All_IP_Stat()['ext'][0]['broadcast']
         self.Devices = Devices()
         self.timeout = timeout
         self.responses = 0
 
-        connector = socket_ops.UDP_Connector(Get_All_IP_Stat()['ext'][0]['broadcast'], self.check_port, self.__check_in__, 5)
+        connector = socket_ops.UDP_Connector(self.broadcast_ip, self.check_port, self.__check_in__, 5)
         connector.send(self.hotphrase.encode())
 
         to = 0

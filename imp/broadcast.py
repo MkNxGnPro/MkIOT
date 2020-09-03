@@ -24,14 +24,14 @@ class Broadcast_Receiver_Server(object):
         def __ignore__(_):
             pass
 
-        self.server = socket_ops.UDP_Server(self.HOST, self.PORT, __ignore__, self.__discovery_response__, max_buffer=self.max_buffer)
+        self.server = socket_ops.UDP_Server(self.HOST, self.PORT, __ignore__, self.__response__, max_buffer=self.max_buffer)
         self.running = True
 
     def shutdown(self):
         self.server.shutdown()
         self.running = False
 
-    def __discovery_response__(self, data, connector=socket_ops.UDP_Server_Client):
+    def __response__(self, data, connector=socket_ops.UDP_Server_Client):
         data = data.decode()
         if self.on_data is not None:
             threading.Thread(target=self.on_data, args=[data, connector], daemon=True).start()
