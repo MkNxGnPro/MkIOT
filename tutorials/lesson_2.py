@@ -32,7 +32,7 @@ server.PORT = 5000
 #server.password = "some_password"       # optionally add a password to the connection - MD5 nonce encryption is used
 
 # We need functions for when we receive different types of data. The type you use will depend on what you're getting done.
-# The four types MkIOT has split are: data (for general data), question (data that requires responses), audio, video and ping (this is only for checking if a connection is alive)
+# The four types MkIOT has split are: data (for general data), question (data that requires responses), audio, video and ping (this is only for checking if a connection is alive or connection latency)
 
 
 # We'll set up data, and questions, not all data types need to be used or have a function defined.
@@ -47,10 +47,10 @@ server.PORT = 5000
 # messaging.message.timing         # The timing of the message - when it was sent (message.timing.sent), when it was received (message.timing.received) and how long it took to send and get a received reply (message.timing.round_trip)
 # and much more
 
-def Data_function(message=iot_server.messaging.message):          # message=iot_server.messaging.message if put here for auto complete
+def Data_function(message=iot_server.messaging.message):          # message=iot_server.messaging.message is put here for auto complete
     print("We received a data message:", message.data, "from:", message.connector)
 
-def Question_function(message=iot_server.messaging.message):      # message=iot_server.messaging.message if put here for auto complete
+def Question_function(message=iot_server.messaging.message):      # message=iot_server.messaging.message is put here for auto complete
     print(f"{colorama.Fore.CYAN}[ SERVER ] - We received a question from:", message.connector)
     print(f"{colorama.Fore.CYAN}[ SERVER ] - They ask:", colorama.Fore.GREEN, message.data, colorama.Fore.RESET)                        # the data from a question
 
@@ -69,7 +69,7 @@ def New_Connection(device=iot_server.__IOT_Device__):
     device.send_data("hello!")
 
     
-# We not need to link our custom functions to the server
+# We now need to link our custom functions to the server
 
 server.on_question       = Question_function   # when we receive a question
 server.on_data           = Data_function       # when we receive data
@@ -105,7 +105,7 @@ server_connection.PORT = 5000
 # Like the server, we need to link functions to the connection since data can go both ways
 
 
-def Client_Data_function(message=iot_server.messaging.message):          # message=iot_server.messaging.message if put here for auto complete
+def Client_Data_function(message=iot_server.messaging.message):          # message=iot_server.messaging.message is put here for auto complete
     print(f"{colorama.Fore.GREEN}[ CLIENT ] - We received a data message from:", message.connector, "\n[ CLIENT ] - Message Data:",colorama.Fore.CYAN, message.data, colorama.Fore.RESET)
 
 
@@ -156,4 +156,21 @@ Example Output:
     >>> Sent Time:                    1599118043.403757
     >>> Received and Responded:       1599118054.586911
     >>> Round Trip:                   11.2 Seconds   (It took me to long to type....)
+
+
+Test MkIOT speed:
+
+    Replace line 121 with:
+    question = "what's up?"
+
+    and Line 57 with:
+    reply = "nothing much"
+
+
+    My New Question Timing:
+
+        >>> The Question Timing:
+        >>> Sent Time:                    1599119295.124059
+        >>> Received and Responded:       1599119295.13171
+        >>> Round Trip:                   0.0 Seconds
 """
