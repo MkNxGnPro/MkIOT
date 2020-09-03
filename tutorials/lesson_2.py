@@ -24,7 +24,12 @@ server = iot_server.IOT_Server()
 server.HOST = "127.0.0.1"       # We'll use our loopback address
 server.PORT = 5000              # We'll use the port 5000
 
-# Those are the only two REQUIRED functions on a server. However, even though the server will run there is no linking to the server's receive stream and our program
+# Those are the only two REQUIRED functions on a server.
+# MkIOT allows a password to be set for Connections, using md5 and nonce encrypting
+server.password                           # String    - A String password to use to verify the client is who they say they are
+
+
+# However, even though the server will run there is no linking to the server's receive stream and our program
 
 # We need functions for when we receive different types of data. The type you use will depend on what you're getting done.
 # The four types of channels MkIOT has are: data (for general data), question (data that requires responses), audio, and video
