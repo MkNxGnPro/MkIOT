@@ -12,7 +12,7 @@ There are endless things you can create with programming, let MkIOT help you bui
 
 import time, colorama # For later use
 
-# Let's start off with getting out IP Address
+# Let's start off with getting our IP Address
 
 from MkIOT import Get_Device_IPS
 
