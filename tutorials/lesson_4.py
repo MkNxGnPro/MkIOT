@@ -144,7 +144,7 @@ My output:
     >>> Device A was found, IP Address: 192.168.0.3
 
 
-Then go back to line 82 and comment it out, rerun the program
+Then go back to line 81 and comment it out, rerun the program
 
 You should see "Device A was not found"
 
